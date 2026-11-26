@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengembaraan Deria - Sains Tahun 1</title>
+    <!-- Tailwind CSS untuk susun atur responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js untuk kesan bunyi interaktif tanpa pautan luar -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Fon mesra kanak-kanak dari Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            min-height: 100vh;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        /* Animasi terapung untuk elemen hiasan dan watak */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Animasi melantun apabila jawapan betul */
+        @keyframes bouncePop {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .animate-pop {
+            animation: bouncePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Animasi bergegar apabila jawapan salah */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Gaya butang 3D mesra kanak-kanak */
+        .btn-3d {
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        /* Kesan kad watak */
+        .char-card {
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+        .char-card:hover {
+            transform: translateY(-6px) scale(1.03);
+        }
+
+        /* Konfeti ringkas */
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 50;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-3 sm:p-6">
+
+    <!-- Bar Atas: Tajuk Permainan -->
+    <div class="w-full max-w-4xl flex justify-center items-center mb-4 bg-white/80 backdrop-blur-md px-6 py-2.5 rounded-full shadow-md">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">🌈</span>
+            <h1 class="text-lg sm:text-xl font-bold text-indigo-700">Sains Tahun 1: Deria Kita</h1>
+        </div>
+    </div>
+
+    <!-- Bekas Utama Permainan -->
+    <main id="gameContainer" class="w-full max-w-4xl bg-white rounded-3xl shadow-2xl border-4 border-indigo-200 overflow-hidden relative min-h-[520px] flex flex-col justify-between">
+        
+        <!-- SKRIN 1: PILIH WATAK & MASUKKAN NAMA (MULA) -->
+        <section id="screen-select" class="p-6 sm:p-8 flex flex-col items-center text-center flex-grow justify-center">
+            <div class="bg-yellow-300 text-yellow-900 font-bold px-4 py-1 rounded-full text-sm mb-2 shadow-sm animate-bounce">
+                ✨ Jom Belajar & Bermain! ✨
+            </div>
+            <h2 class="text-3xl sm:text-4xl font-bold text-indigo-800 mb-2">Pengembaraan 5 Deria</h2>
+            <p class="text-gray-600 text-base sm:text-lg mb-5">Pilih watak dan tulis nama kamu di bawah!</p>
+
+            <!-- Grid Pilihan Watak: Lelaki & Perempuan -->
+            <div class="grid grid-cols-2 gap-4 sm:gap-6 w-full max-w-md mb-6">
+                <!-- Watak 1: Lelaki -->
+                <div onclick="selectCharacter('Lelaki', '👦🏽', '#3b82f6')" id="char-Lelaki" class="char-card cursor-pointer bg-blue-50 border-4 border-blue-200 rounded-2xl p-4 sm:p-5 flex flex-col items-center">
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-blue-200 flex items-center justify-center text-6xl sm:text-7xl mb-3 shadow-inner animate-float">
+                        👦🏽
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-bold text-blue-800">Lelaki</h3>
+                </div>
+
+                <!-- Watak 2: Perempuan -->
+                <div onclick="selectCharacter('Perempuan', '👧🏻', '#ec4899')" id="char-Perempuan" class="char-card cursor-pointer bg-pink-50 border-4 border-pink-200 rounded-2xl p-4 sm:p-5 flex flex-col items-center">
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-pink-200 flex items-center justify-center text-6xl sm:text-7xl mb-3 shadow-inner animate-float" style="animation-delay: 0.3s;">
+                        👧🏻
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-bold text-pink-800">Perempuan</h3>
+                </div>
+            </div>
+
+            <!-- Ruangan Masukkan Nama Sendiri -->
+            <div class="w-full max-w-md mb-6">
+                <label for="playerNameInput" class="block text-indigo-900 font-bold text-base sm:text-lg mb-2">
+                    ✏️ Tulis Nama Kamu:
+                </label>
+                <input 
+                    type="text" 
+                    id="playerNameInput" 
+                    oninput="validateStartForm()"
+                    maxlength="20"
+                    placeholder="Contoh: Adam / Siti" 
+                    class="w-full text-center text-xl font-bold text-indigo-900 bg-indigo-50 border-4 border-indigo-200 focus:border-indigo-500 focus:bg-white rounded-2xl px-4 py-3 outline-none transition shadow-inner"
+                />
+            </div>
+
+            <button id="startBtn" onclick="startGame()" disabled class="btn-3d bg-gray-300 text-gray-500 font-bold text-xl px-10 py-4 rounded-2xl cursor-not-allowed">
+                Pilih Watak & Tulis Nama 👆
+            </button>
+        </section>
+
+        <!-- SKRIN 2: PAPARAN PERMAINAN (SITUASI & PADANAN) -->
+        <section id="screen-play" class="hidden flex-col h-full flex-grow">
+            <!-- Header Status Permainan -->
+            <div class="bg-indigo-600 text-white p-4 flex flex-wrap justify-between items-center gap-2">
+                <div class="flex items-center gap-3">
+                    <div id="playerAvatarBadge" class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-3xl shadow">👦🏽</div>
+                    <div>
+                        <p class="text-xs text-indigo-200 uppercase font-bold tracking-wider">Penjelajah</p>
+                        <p id="playerNameDisplay" class="font-bold text-lg leading-tight">Amir</p>
+                    </div>
+                </div>
+
+                <!-- Bar Kemajuan Soalan -->
+                <div class="flex-grow max-w-xs mx-2">
+                    <div class="flex justify-between text-xs font-bold mb-1">
+                        <span>Situasi <span id="qCurrent">1</span> / <span id="qTotal">8</span></span>
+                        <span id="progressPercent">12%</span>
+                    </div>
+                    <div class="w-full bg-indigo-900 rounded-full h-3 overflow-hidden">
+                        <div id="progressBar" class="bg-yellow-400 h-full rounded-full transition-all duration-500" style="width: 12.5%"></div>
+                    </div>
+                </div>
+
+                <!-- Bintang / Markah -->
+                <div class="bg-indigo-800 px-4 py-2 rounded-2xl flex items-center gap-2 border-2 border-indigo-400">
+                    <span class="text-2xl">⭐</span>
+                    <span id="scoreDisplay" class="text-2xl font-bold text-yellow-300">0</span>
+                </div>
+            </div>
+
+            <!-- Kawasan Tengah: Situasi Multimedia -->
+            <div class="p-4 sm:p-6 flex-grow flex flex-col items-center justify-center bg-gradient-to-b from-sky-50 to-white">
+                
+                <!-- Kad Situasi -->
+                <div id="situationCard" class="w-full max-w-2xl bg-white rounded-3xl border-4 border-sky-200 p-5 sm:p-6 shadow-lg text-center relative mb-6">
+                    <!-- Ilustrasi Animasi Situasi -->
+                    <div id="situationVisual" class="w-32 h-32 sm:w-36 sm:h-36 mx-auto mb-3 bg-amber-50 rounded-full border-4 border-amber-200 flex items-center justify-center relative overflow-hidden shadow-inner">
+                        <!-- Diisi oleh JS -->
+                    </div>
+
+                    <!-- Teks Situasi -->
+                    <p id="situationText" class="text-xl sm:text-2xl font-bold text-gray-800 leading-snug mb-2">
+                        Memuatkan situasi...
+                    </p>
+                    <p class="text-sm sm:text-base font-semibold text-indigo-600">
+                        Deria manakah yang digunakan? Pilih di bawah! 👇
+                    </p>
+                </div>
+
+                <!-- Pilihan 5 Deria (Padanan) -->
+                <div id="sensesGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-3 w-full max-w-3xl">
+                    <!-- Dijana secara dinamik oleh JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SKRIN 3: TAMAT PERMAINAN (KEPUTUSAN) -->
+        <section id="screen-end" class="hidden p-6 sm:p-10 flex-col items-center justify-center text-center flex-grow bg-gradient-to-b from-yellow-50 to-white">
+            <div id="endTrophy" class="text-7xl sm:text-8xl mb-4 animate-bounce">🏆</div>
+            <h2 class="text-3xl sm:text-4xl font-bold text-indigo-800 mb-2">Tahniah, <span id="endPlayerName">Amir</span>!</h2>
+            <p id="endMessage" class="text-lg text-gray-600 mb-6">Kamu sangat hebat mengenal pasti deria manusia!</p>
+
+            <div class="bg-white border-4 border-yellow-300 rounded-3xl p-6 shadow-xl mb-8 w-full max-w-md">
+                <p class="text-gray-500 font-bold uppercase text-sm mb-1">Jumlah Bintang Dikumpul</p>
+                <div class="flex items-center justify-center gap-3">
+                    <span class="text-5xl">⭐</span>
+                    <span id="finalScore" class="text-5xl font-bold text-amber-500">80</span>
+                </div>
+                <p id="starRatingText" class="text-sm font-bold text-emerald-600 mt-2">Cemerlang! 5/5 Bintang!</p>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="restartSameCharacter()" class="btn-3d bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-lg px-8 py-4 rounded-2xl flex items-center gap-2">
+                    🔄 Main Semula
+                </button>
+                <button onclick="goToCharacterSelect()" class="btn-3d bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-lg px-8 py-4 rounded-2xl flex items-center gap-2">
+                    👤 Tukar Watak
+                </button>
+            </div>
+        </section>
+
+        <!-- MODAL MAKLUM BALAS INTERAKTIF (PENGGANTI ALERT) -->
+        <div id="feedbackModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+            <div id="feedbackBox" class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl border-4 border-emerald-400 animate-pop">
+                <div id="feedbackEmoji" class="text-6xl mb-3">🎉</div>
+                <h3 id="feedbackTitle" class="text-2xl sm:text-3xl font-bold text-emerald-700 mb-2">Betul!</h3>
+                <p id="feedbackDesc" class="text-gray-700 text-base sm:text-lg mb-6 font-medium">
+                    Kita menggunakan mata untuk melihat pelangi yang cantik.
+                </p>
+                <button id="nextBtn" onclick="nextQuestion()" class="btn-3d w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl py-3.5 rounded-2xl">
+                    Seterusnya ➡️
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Kecil -->
+    <footer class="mt-4 text-center text-indigo-900/70 text-xs sm:text-sm font-semibold">
+        Direka khas untuk Pembelajaran Sains Tahun 1 • Topik: Deria Manusia
+    </footer>
+
+    <script>
+        // ==========================================
+        // 1. DATA DERIA & SITUASI HARIAN (TAHUN 1)
+        // ==========================================
+        const SENSES = [
+            {
+                id: 'lihat',
+                name: 'Penglihatan',
+                organ: 'Mata',
+                icon: '👁️',
+                color: 'bg-sky-100 border-sky-400 text-sky-900 hover:bg-sky-200',
+                badgeColor: 'bg-sky-500'
+            },
+            {
+                id: 'dengar',
+                name: 'Pendengaran',
+                organ: 'Telinga',
+                icon: '👂',
+                color: 'bg-amber-100 border-amber-400 text-amber-900 hover:bg-amber-200',
+                badgeColor: 'bg-amber-500'
+            },
+            {
+                id: 'bau',
+                name: 'Bau',
+                organ: 'Hidung',
+                icon: '👃',
+                color: 'bg-emerald-100 border-emerald-400 text-emerald-900 hover:bg-emerald-200',
+                badgeColor: 'bg-emerald-500'
+            },
+            {
+                id: 'rasa',
+                name: 'Rasa',
+                organ: 'Lidah',
+                icon: '👅',
+                color: 'bg-rose-100 border-rose-400 text-rose-900 hover:bg-rose-200',
+                badgeColor: 'bg-rose-500'
+            },
+            {
+                id: 'sentuh',
+                name: 'Sentuhan',
+                organ: 'Kulit / Tangan',
+                icon: '✋',
+                color: 'bg-purple-100 border-purple-400 text-purple-900 hover:bg-purple-200',
+                badgeColor: 'bg-purple-500'
+            }
+        ];
+
+        // Senarai situasi interaktif menggunakan nama watak secara dinamik ({name})
+        const ALL_SITUATIONS = [
+            {
+                text: "{name} ternampak pelangi yang sangat cantik selepas hujan berhenti.",
+                visual: `<div class="text-6xl animate-pulse">🌈</div><div class="absolute bottom-2 right-3 text-2xl">☁️</div>`,
+                answer: 'lihat',
+                explanation: "Betul! Kita menggunakan DERIA PENGLIHATAN (mata) untuk melihat warna-warni pelangi.",
+                soundCue: "rainbow"
+            },
+            {
+                text: "{name} terdengar bunyi loceng sekolah berdering menandakan waktu rehat.",
+                visual: `<div class="text-6xl animate-bounce">🔔</div><div class="absolute top-2 left-3 text-xl">🎵</div>`,
+                answer: 'dengar',
+                explanation: "Syabas! Kita menggunakan DERIA PENDENGARAN (telinga) untuk mendengar bunyi loceng.",
+                soundCue: "bell"
+            },
+            {
+                text: "{name} terhidu bau wangi bunga ros di taman bunga ibu.",
+                visual: `<div class="text-6xl animate-float">🌹</div><div class="absolute top-2 right-3 text-2xl">✨</div>`,
+                answer: 'bau',
+                explanation: "Pandai! Kita menggunakan DERIA BAU (hidung) untuk menghidu bau wangi bunga.",
+                soundCue: "sniff"
+            },
+            {
+                text: "{name} makan buah tembikai yang sangat manis dan menyegarkan.",
+                visual: `<div class="text-6xl animate-pulse">🍉</div><div class="absolute bottom-2 left-3 text-xl">😋</div>`,
+                answer: 'rasa',
+                explanation: "Tepat sekali! Kita menggunakan DERIA RASA (lidah) untuk merasai kemanisan buah tembikai.",
+                soundCue: "yum"
+            },
+            {
+                text: "{name} menyentuh bulu kucing peliharaannya yang sangat lembut dan gebu.",
+                visual: `<div class="text-6xl animate-float">🐈</div><div class="absolute bottom-2 right-3 text-2xl">💕</div>`,
+                answer: 'sentuh',
+                explanation: "Hebat! Kita menggunakan DERIA SENTUHAN (kulit/tangan) untuk merasai permukaan lembut.",
+                soundCue: "soft"
+            },
+            {
+                text: "{name} membaca buku cerita bergambar di dalam bilik bacaan.",
+                visual: `<div class="text-6xl">📖</div><div class="absolute top-2 right-3 text-2xl animate-pulse">💡</div>`,
+                answer: 'lihat',
+                explanation: "Betul! Mata membolehkan {name} melihat tulisan dan gambar di dalam buku.",
+                soundCue: "rainbow"
+            },
+            {
+                text: "{name} terjaga dari tidur apabila mendengar bunyi guruh berdentum kuat.",
+                visual: `<div class="text-6xl animate-bounce">⛈️</div><div class="absolute bottom-2 right-3 text-2xl">⚡</div>`,
+                answer: 'dengar',
+                explanation: "Tepat! Telinga mengesan bunyi guruh yang kuat di langit.",
+                soundCue: "thunder"
+            },
+            {
+                text: "{name} menutup hidung kerana terbau sampah yang sangat busuk.",
+                visual: `<div class="text-6xl">🗑️</div><div class="absolute top-2 left-3 text-2xl animate-bounce">🤢</div>`,
+                answer: 'bau',
+                explanation: "Syabas! Hidung membantu kita menghidu bau busuk supaya kita menjauhinya.",
+                soundCue: "sniff"
+            },
+            {
+                text: "{name} mengerutkan muka kerana termakan buah limau nipis yang masam!",
+                visual: `<div class="text-6xl animate-pulse">🍋</div><div class="absolute bottom-2 right-3 text-2xl">😖</div>`,
+                answer: 'rasa',
+                explanation: "Betul! Lidah dapat mengesan rasa masam, manis, masin dan pahit.",
+                soundCue: "yum"
+            },
+            {
+                text: "{name} berasa sangat sejuk apabila memegang ketulan ais batu.",
+                visual: `<div class="text-6xl animate-float">🧊</div><div class="absolute top-2 left-3 text-2xl">❄️</div>`,
+                answer: 'sentuh',
+                explanation: "Pandai! Kulit pada tangan dapat merasai suhu sejuk ais batu.",
+                soundCue: "soft"
+            }
+        ];
+
+        // ==========================================
+        // 2. PEMBOLEH UBAH KEADAAN PERMAINAN
+        // ==========================================
+        let selectedCharacter = null; // { gender, avatar, color, name }
+        let gameQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let hasAnsweredCurrent = false;
+
+        // ==========================================
+        // 3. SISTEM MULTIMEDIA (AUDIO TONE.JS)
+        // ==========================================
+        let synth = null;
+
+        function initAudio() {
+            if (!synth && typeof Tone !== 'undefined') {
+                synth = new Tone.PolySynth(Tone.Synth).toDestination();
+                synth.volume.value = -6;
+            }
+        }
+
+        function playSoundEffect(type) {
+            try {
+                initAudio();
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                const now = Tone.now();
+                if (type === 'select') {
+                    synth.triggerAttackRelease("C5", "16n", now);
+                } else if (type === 'correct') {
+                    synth.triggerAttackRelease("C5", "16n", now);
+                    synth.triggerAttackRelease("E5", "16n", now + 0.1);
+                    synth.triggerAttackRelease("G5", "8n", now + 0.2);
+                } else if (type === 'wrong') {
+                    synth.triggerAttackRelease("E3", "8n", now);
+                    synth.triggerAttackRelease("Eb3", "4n", now + 0.15);
+                } else if (type === 'win') {
+                    synth.triggerAttackRelease("C5", "16n", now);
+                    synth.triggerAttackRelease("E5", "16n", now + 0.12);
+                    synth.triggerAttackRelease("G5", "16n", now + 0.24);
+                    synth.triggerAttackRelease("C6", "4n", now + 0.36);
+                } else if (type === 'bell') {
+                    synth.triggerAttackRelease("B5", "8n", now);
+                    synth.triggerAttackRelease("E6", "4n", now + 0.15);
+                }
+            } catch (e) {
+                console.warn("Audio tidak dapat dimainkan:", e);
+            }
+        }
+
+        // ==========================================
+        // 4. LOGIK PEMILIHAN WATAK & MULA PERMAINAN
+        // ==========================================
+        function selectCharacter(gender, avatar, color) {
+            playSoundEffect('select');
+            const currentName = document.getElementById('playerNameInput').value.trim();
+            selectedCharacter = { gender, avatar, color, name: currentName };
+
+            // Reset gaya semua kad watak
+            document.querySelectorAll('.char-card').forEach(card => {
+                card.classList.remove('ring-4', 'ring-indigo-500', 'bg-indigo-100', 'scale-105');
+            });
+
+            // Serlahkan kad watak yang dipilih
+            const chosenCard = document.getElementById(`char-${gender}`);
+            if (chosenCard) {
+                chosenCard.classList.add('ring-4', 'ring-indigo-500', 'bg-indigo-100', 'scale-105');
+            }
+
+            validateStartForm();
+        }
+
+        function validateStartForm() {
+            const nameInput = document.getElementById('playerNameInput').value.trim();
+            const startBtn = document.getElementById('startBtn');
+
+            if (selectedCharacter) {
+                selectedCharacter.name = nameInput;
+            }
+
+            if (selectedCharacter && nameInput.length > 0) {
+                startBtn.disabled = false;
+                startBtn.className = "btn-3d bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl px-10 py-4 rounded-2xl cursor-pointer animate-pop";
+                startBtn.innerHTML = `Mula bersama ${nameInput}! 🚀`;
+            } else {
+                startBtn.disabled = true;
+                startBtn.className = "btn-3d bg-gray-300 text-gray-500 font-bold text-xl px-10 py-4 rounded-2xl cursor-not-allowed";
+                if (!selectedCharacter && nameInput.length === 0) {
+                    startBtn.innerHTML = "Pilih Watak & Tulis Nama 👆";
+                } else if (!selectedCharacter) {
+                    startBtn.innerHTML = "Pilih Watak Dahulu 👆";
+                } else {
+                    startBtn.innerHTML = "Tulis Nama Kamu Dahulu ✏️";
+                }
+            }
+        }
+
+        function shuffleArray(array) {
+            const copy = [...array];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('playerNameInput').value.trim();
+            if (!selectedCharacter || !nameInput) return;
+            selectedCharacter.name = nameInput;
+
+            playSoundEffect('correct');
+
+            // Pilih 8 soalan rawak daripada senarai situasi
+            gameQuestions = shuffleArray(ALL_SITUATIONS).slice(0, 8);
+            currentIndex = 0;
+            score = 0;
+
+            // Kemas kini maklumat pemain di header
+            document.getElementById('playerAvatarBadge').textContent = selectedCharacter.avatar;
+            document.getElementById('playerNameDisplay').textContent = selectedCharacter.name;
+            document.getElementById('qTotal').textContent = gameQuestions.length;
+            document.getElementById('scoreDisplay').textContent = score;
+
+            // Tukar paparan skrin
+            document.getElementById('screen-select').classList.add('hidden');
+            document.getElementById('screen-end').classList.add('hidden');
+            document.getElementById('screen-play').classList.remove('hidden');
+            document.getElementById('screen-play').classList.add('flex');
+
+            renderSensesButtons();
+            loadQuestion();
+        }
+
+        // ==========================================
+        // 5. PAPARAN SITUASI & PADANAN DERIA
+        // ==========================================
+        function renderSensesButtons() {
+            const grid = document.getElementById('sensesGrid');
+            grid.innerHTML = '';
+
+            SENSES.forEach(sense => {
+                const btn = document.createElement('button');
+                btn.id = `sense-btn-${sense.id}`;
+                btn.onclick = () => checkAnswer(sense.id);
+                btn.className = `btn-3d ${sense.color} border-b-4 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-transform hover:scale-105`;
+                btn.innerHTML = `
+                    <span class="text-4xl sm:text-5xl mb-1 drop-shadow-sm">${sense.icon}</span>
+                    <span class="font-bold text-sm sm:text-base leading-tight">${sense.name}</span>
+                    <span class="text-xs opacity-80 font-semibold">(${sense.organ})</span>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        function loadQuestion() {
+            hasAnsweredCurrent = false;
+            const currentQ = gameQuestions[currentIndex];
+            const formattedText = currentQ.text.replace(/{name}/g, selectedCharacter.name);
+
+            // Kemas kini bar kemajuan
+            const qNum = currentIndex + 1;
+            const total = gameQuestions.length;
+            const pct = Math.round((qNum / total) * 100);
+            document.getElementById('qCurrent').textContent = qNum;
+            document.getElementById('progressPercent').textContent = `${pct}%`;
+            document.getElementById('progressBar').style.width = `${pct}%`;
+
+            // Papar ilustrasi & teks situasi dengan animasi
+            const card = document.getElementById('situationCard');
+            card.classList.remove('animate-pop');
+            void card.offsetWidth; // Trigger reflow untuk ulang animasi
+            card.classList.add('animate-pop');
+
+            document.getElementById('situationVisual').innerHTML = currentQ.visual;
+            document.getElementById('situationText').textContent = formattedText;
+
+            // Reset keadaan butang deria
+            SENSES.forEach(sense => {
+                const btn = document.getElementById(`sense-btn-${sense.id}`);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-40', 'animate-shake', 'ring-4', 'ring-emerald-500');
+                }
+            });
+
+            // Kesan bunyi khas jika ada
+            if (currentQ.soundCue === 'bell') {
+                setTimeout(() => playSoundEffect('bell'), 300);
+            }
+        }
+
+        function checkAnswer(chosenSenseId) {
+            if (hasAnsweredCurrent) return;
+
+            const currentQ = gameQuestions[currentIndex];
+            const btn = document.getElementById(`sense-btn-${chosenSenseId}`);
+
+            if (chosenSenseId === currentQ.answer) {
+                // JAWAPAN BETUL
+                hasAnsweredCurrent = true;
+                playSoundEffect('correct');
+                score += 10;
+                document.getElementById('scoreDisplay').textContent = score;
+                btn.classList.add('ring-4', 'ring-emerald-500');
+
+                spawnConfetti();
+
+                const explanationText = currentQ.explanation.replace(/{name}/g, selectedCharacter.name);
+                showFeedbackModal(true, "Hebat! Jawapan Betul! 🎉", explanationText);
+            } else {
+                // JAWAPAN SALAH - BERI PELUANG CUBA LAGI
+                playSoundEffect('wrong');
+                btn.classList.remove('animate-shake');
+                void btn.offsetWidth;
+                btn.classList.add('animate-shake', 'opacity-40');
+                btn.disabled = true;
+            }
+        }
+
+        function showFeedbackModal(isSuccess, title, desc) {
+            const modal = document.getElementById('feedbackModal');
+            const box = document.getElementById('feedbackBox');
+            document.getElementById('feedbackTitle').textContent = title;
+            document.getElementById('feedbackDesc').textContent = desc;
+
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentIndex + 1 >= gameQuestions.length) {
+                nextBtn.innerHTML = "Lihat Keputusan 🏆";
+            } else {
+                nextBtn.innerHTML = "Situasi Seterusnya ➡️";
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            playSoundEffect('select');
+            document.getElementById('feedbackModal').classList.add('hidden');
+            currentIndex++;
+
+            if (currentIndex < gameQuestions.length) {
+                loadQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        // ==========================================
+        // 6. TAMAT PERMAINAN & KONFETI
+        // ==========================================
+        function endGame() {
+            playSoundEffect('win');
+            spawnConfetti();
+            setTimeout(spawnConfetti, 500);
+
+            document.getElementById('screen-play').classList.add('hidden');
+            document.getElementById('screen-play').classList.remove('flex');
+            document.getElementById('screen-end').classList.remove('hidden');
+            document.getElementById('screen-end').classList.add('flex');
+
+            document.getElementById('endPlayerName').textContent = selectedCharacter.name;
+            document.getElementById('finalScore').textContent = `${score} / ${gameQuestions.length * 10}`;
+        }
+
+        function restartSameCharacter() {
+            startGame();
+        }
+
+        function goToCharacterSelect() {
+            playSoundEffect('select');
+            document.getElementById('screen-end').classList.add('hidden');
+            document.getElementById('screen-end').classList.remove('flex');
+            document.getElementById('screen-select').classList.remove('hidden');
+        }
+
+        function spawnConfetti() {
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            for (let i = 0; i < 30; i++) {
+                const conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.top = '-15px';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+                document.body.appendChild(conf);
+                setTimeout(() => conf.remove(), 3500);
+            }
+        }
+    </script>
+</body>
+</html>
